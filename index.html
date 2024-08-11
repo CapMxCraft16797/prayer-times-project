@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        background: linear-gradient(45deg, #240165, #05001c);
+      }
+      #city-name {
+        font-weight: 400;
+        font-size: 70px;
+        color: white;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        margin: 0px;
+      }
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        background: linear-gradient(45deg, #5709ee, #7a37bf);
+        height: 20%;
+        font-weight: 600;
+      }
+      .card {
+        margin-top: 40px;
+        height: 150px;
+        width: 125px;
+        box-shadow: 0px 10px 5px rgb(0, 0, 0/30%);
+      }
+      .time {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        color: #05001c;
+        height: 90%;
+        font-size: 30px;
+        font-weight: 20px !important;
+      }
+      #cities {
+        background: none;
+        color: white;
+        width: 200px;
+        padding: 5px;
+        border-radius: 20px;
+      }
+      option {
+        color: black;
+      }
+    </style>
+  </head>
+  <body style="direction: rtl">
+    <div style="margin-top: 100px">
+      <!-- City.Name + date -->
+      <div>
+        <!-- City Name -->
+        <div style="color: white; margin-right: 40px">
+          <h1 id="city-name">Riyadh</h1>
+          <h6
+            style="font-size: 40px; margin-top: 40px; font-weight: 400"
+            id="date"
+          >
+            1st Nov fsd
+          </h6>
+        </div>
+        <!-- //City Name -->
+        <hr style="margin: 0 50px; border-color: #5200e1" />
+        <!-- //City.Name + date -->
+        <!-- prayer timings -->
+        <div
+          style="
+            display: flex;
+            justify-content: space-around;
+            font-weight: 400px;
+          "
+        >
+          <div class="card">
+            <div class="header">الفجر</div>
+            <div class="time" id="fajr">5:00 Pm</div>
+          </div>
+          <div class="card">
+            <div class="header">الشروق</div>
+            <div class="time" id="shrouk">5:00 Pm</div>
+          </div>
+          <div class="card">
+            <div class="header">الظهر</div>
+            <div class="time" id="zohr">5:00 Pm</div>
+          </div>
+          <div class="card">
+            <div class="header">العصر</div>
+            <div class="time" id="asr">5:00 Pm</div>
+          </div>
+          <div class="card">
+            <div class="header">المغرب</div>
+            <div class="time" id="maghreb">5:00 Pm</div>
+          </div>
+          <div class="card">
+            <div class="header">العشاء</div>
+            <div class="time" id="isha">5:00 Pm</div>
+          </div>
+        </div>
+        <!-- //prayer timings -->
+        <!-- city selection -->
+        <div
+          class="center"
+          style="margin: 60px; display: flex; justify-content: center"
+        >
+          <select name="" id="cities"></select>
+        </div>
+        <!-- //city selection -->
+      </div>
+    </div>
+  </body>
+  <script src="node_modules/axios/dist/axios.min.js"></script>
+  <script>
+    let citiesNames = [
+      { arabicName: "مكة المكرمة", name: "Makkah al Mukarramah" },
+      { arabicName: "القصيم", name: "Al Qaşīm" },
+
+      { arabicName: "الرياض", name: "Ar Riyāḑ" },
+    ];
+    for (let city of citiesNames) {
+      document.getElementById(
+        "cities"
+      ).innerHTML += `<option>${city.arabicName}</option>`;
+    }
+
+    // Make a request for a user with a given ID
+    function getPrayerTimesByCity(countryName, cityName) {
+      let params = {
+        country: countryName,
+        city: cityName, //"Makkah al Mukarramah",
+      };
+      axios
+        .get("http://api.aladhan.com/v1/timingsByCity/:date", {
+          params: params,
+        })
+        .then(function (response) {
+          let timings = response.data.data.timings;
+          fillTimePrayer("fajr", timings.Fajr);
+          fillTimePrayer("shrouk", timings.Sunrise);
+          fillTimePrayer("zohr", timings.Dhuhr);
+          fillTimePrayer("asr", timings.Asr);
+          fillTimePrayer("maghreb", timings.Sunset);
+          fillTimePrayer("isha", timings.Isha);
+          const readableDate = response.data.data.date.readable;
+          const weekDay = response.data.data.date.hijri.weekday.ar;
+          const date = weekDay + " " + readableDate;
+          document.getElementById("date").innerHTML = date;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      function fillTimePrayer(id, time) {
+        document.getElementById(id).innerHTML = time;
+      }
+    }
+    let currentValue = document.getElementById("cities").value;
+
+    getPrayerTimesByCity("SA", currentValue);
+    document.getElementById("city-name").innerHTML = `${currentValue}`;
+    // getPrayerTimesByCity("SA", "Ar Riyāḑ");
+    document.getElementById("cities").addEventListener("change", function () {
+      let cityName = "";
+      for (let city of citiesNames) {
+        if (city.arabicName == this.value) {
+          cityName = city.name;
+          cityArabicName = city.arabicName;
+        }
+      }
+
+      //   alert("ok");
+      // Assuming country is Saudi Arabia; change as needed
+      getPrayerTimesByCity("SA", cityName); // Assuming country is Saudi Arabia; change as needed
+      //   document.getElementById("city-name").innerHTML = "";
+      document.getElementById("city-name").innerHTML = this.value;
+    });
+  </script>
+</html>
